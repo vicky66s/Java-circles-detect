@@ -1,0 +1,45 @@
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class CircleDetection {
+
+    public static void main(String[] args) {
+        // Load the OpenCV library
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+        // Read the image
+        Mat image = Imgcodecs.imread("your_image.jpg");
+
+        // Convert the image to grayscale
+        Mat gray = new Mat();
+        Imgproc.cvtColor(image, gray, Imgproc.COLOR_BGR2GRAY);
+
+        // Reduce noise to avoid false circle detection
+        Imgproc.GaussianBlur(gray, gray, new org.opencv.core.Size(9, 9), 2, 2);
+
+        // Detect circles using Hough Transform
+        Mat circles = new Mat();
+        Imgproc.HoughCircles(gray, circles, Imgproc.CV_HOUGH_GRADIENT, 1, gray.rows() / 8, 200, 100, 0, 0);
+
+        // Draw circles on the original image
+        if (circles.cols() > 0) {
+            for (int x = 0; x < circles.cols(); x++) {
+                double[] circle = circles.get(0, x);
+                double centerX = circle[0];
+                double centerY = circle[1];
+                double radius = circle[2];
+                Imgproc.circle(image, new org.opencv.core.Point(centerX, centerY), (int) radius, new Scalar(0, 255, 0), 4);
+            }
+        }
+
+        // Display the image with detected circles
+        Imgcodecs.imwrite("detected_circles.jpg", image);
+    }
+}
